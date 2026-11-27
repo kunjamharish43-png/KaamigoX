@@ -246,8 +246,33 @@ fun PdfSplitterTool() {
         if (selectedPdf != null) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text("फाइल: $pdfName")
-            Text("कुल पेज: $pageCount")
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp)
+                ) {
+                    Text("📄 $pdfName")
+                    Text("कुल पेज: $pageCount")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            selectedPdf = null
+                            pdfName = ""
+                            pageCount = 0
+                            startPage = "1"
+                            endPage = "1"
+                            status = "PDF हटा दी गई। दूसरी PDF चुनें।"
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isProcessing
+                    ) {
+                        Text("🗑 चुनी हुई PDF हटाएँ")
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
