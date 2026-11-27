@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun CalculatorTool() {
     var display by remember { mutableStateOf("0") }
+    var expression by remember { mutableStateOf("") }
     var firstNumber by remember { mutableStateOf(0.0) }
     var operator by remember { mutableStateOf("") }
     var newNumber by remember { mutableStateOf(false) }
@@ -20,20 +21,24 @@ fun CalculatorTool() {
         when (value) {
             "C" -> {
                 display = "0"
+                expression = ""
                 firstNumber = 0.0
                 operator = ""
                 newNumber = false
             }
 
             "⌫" -> {
-                display = if (display.length > 1) {
-                    display.dropLast(1)
-                } else "0"
+                if (display != "Error") {
+                    display = if (display.length > 1) {
+                        display.dropLast(1)
+                    } else "0"
+                }
             }
 
             "+", "-", "×", "÷" -> {
                 firstNumber = display.toDoubleOrNull() ?: 0.0
                 operator = value
+                expression = "$display $value"
                 newNumber = true
             }
 
@@ -44,10 +49,14 @@ fun CalculatorTool() {
                     "+" -> firstNumber + second
                     "-" -> firstNumber - second
                     "×" -> firstNumber * second
-                    "÷" -> if (second != 0.0) {
-                        firstNumber / second
-                    } else null
+                    "÷" -> if (second != 0.0) firstNumber / second else null
                     else -> second
+                }
+
+                expression = if (operator.isNotEmpty()) {
+                    "$expression $second ="
+                } else {
+                    "$second ="
                 }
 
                 display = result?.let {
@@ -61,6 +70,7 @@ fun CalculatorTool() {
 
             "." -> {
                 if (newNumber || display == "Error") {
+                    if (operator.isEmpty()) expression = ""
                     display = "0."
                     newNumber = false
                 } else if (!display.contains(".")) {
@@ -70,6 +80,7 @@ fun CalculatorTool() {
 
             else -> {
                 if (display == "Error" || newNumber || display == "0") {
+                    if (operator.isEmpty()) expression = ""
                     display = value
                     newNumber = false
                 } else {
@@ -84,7 +95,7 @@ fun CalculatorTool() {
         listOf("7", "8", "9", "-"),
         listOf("4", "5", "6", "+"),
         listOf("1", "2", "3", "="),
-        listOf("0", "0", ".", "=")
+        listOf("0", ".")
     )
 
     Column(
@@ -94,17 +105,24 @@ fun CalculatorTool() {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Calculator",
+            "Calculator",
             fontSize = 26.sp,
             color = MaterialTheme.colorScheme.primary
         )
 
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            contentAlignment = Alignment.BottomEnd
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.End
         ) {
+            Text(
+                text = expression,
+                fontSize = 22.sp,
+                color = MaterialTheme.colorScheme.secondary
+            )
+
             Text(
                 text = display,
                 fontSize = 42.sp
@@ -116,24 +134,20 @@ fun CalculatorTool() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                row.forEachIndexed { index, key ->
-                    val isZeroDuplicate =
-                        row == rows.last() && index == 1
-                    if (!isZeroDuplicate) {
-                        Button(
-                            onClick = { press(key) },
-                            modifier = Modifier
-                                .weight(if (key == "0" && row == rows.last()) 2f else 1f)
-                                .height(64.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (
-                                    key in listOf("+", "-", "×", "÷", "=")
-                                ) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.secondary
-                            )
-                        ) {
-                            Text(key, fontSize = 22.sp)
-                        }
+                row.forEach { key ->
+                    Button(
+                        onClick = { press(key) },
+                        modifier = Modifier
+                            .weight(if (row.size == 2) 2f else 1f)
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (
+                                key in listOf("+", "-", "×", "÷", "=")
+                            ) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Text(key, fontSize = 22.sp)
                     }
                 }
             }
