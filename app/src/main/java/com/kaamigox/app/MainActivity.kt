@@ -42,7 +42,8 @@ fun KaamigoApp() {
         "Text Case Converter",
         "Text Encoder / Decoder",
         "QR Code Generator",
-        "Image to PDF Converter"
+        "Image to PDF Converter",
+        "PDF to Image Converter"
     )
 
     Scaffold(
@@ -82,6 +83,7 @@ fun KaamigoApp() {
                 "Text Encoder / Decoder" -> TextEncoderDecoderTool()
                 "QR Code Generator" -> QRCodeGeneratorTool()
                 "Image to PDF Converter" -> ImageToPdfTool()
+                "PDF to Image Converter" -> PdfToImageTool()
 
                 else -> {
                     LazyColumn(
