@@ -35,8 +35,8 @@ fun KaamigoApp() {
 
     val tools = listOf(
         "Calculator",
-        "Password Generator",
         "Word Counter",
+        "Password Generator",
         "Text Case Converter",
         "Text Encoder / Decoder"
     )
@@ -47,6 +47,13 @@ fun KaamigoApp() {
                 Text("← Back")
             }
             CalculatorTool()
+        }
+    } else if (selectedTool == "Word Counter") {
+        Column {
+            TextButton(onClick = { selectedTool = "" }) {
+                Text("← Back")
+            }
+            WordCounterTool()
         }
     } else {
         Scaffold(
