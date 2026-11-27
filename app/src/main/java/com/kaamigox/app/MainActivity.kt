@@ -43,7 +43,8 @@ fun KaamigoApp() {
         "Text Encoder / Decoder",
         "QR Code Generator",
         "Image to PDF Converter",
-        "PDF to Image Converter"
+        "PDF to Image Converter",
+        "Image Compressor"
     )
 
     Scaffold(
@@ -84,6 +85,7 @@ fun KaamigoApp() {
                 "QR Code Generator" -> QRCodeGeneratorTool()
                 "Image to PDF Converter" -> ImageToPdfTool()
                 "PDF to Image Converter" -> PdfToImageTool()
+                "Image Compressor" -> ImageCompressorTool()
 
                 else -> {
                     LazyColumn(
