@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KaamigoApp() {
     var selectedTool by remember { mutableStateOf("") }
