@@ -1,7 +1,11 @@
 
 package com.kaamigox.app
 
+import android.content.ContentValues
 import android.graphics.Bitmap
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.zxing.BarcodeFormat
@@ -19,6 +24,8 @@ import com.google.zxing.qrcode.QRCodeWriter
 
 @Composable
 fun QRCodeGeneratorTool() {
+    val context = LocalContext.current
+
     var inputText by remember { mutableStateOf("") }
     var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var message by remember { mutableStateOf("") }
@@ -72,6 +79,58 @@ fun QRCodeGeneratorTool() {
         }
     }
 
+    fun saveQR(bitmap: Bitmap) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            message = "Gallery Save के लिए Android 10 या नया संस्करण चाहिए।"
+            return
+        }
+
+        try {
+            val values = ContentValues().apply {
+                put(
+                    MediaStore.Images.Media.DISPLAY_NAME,
+                    "KaamigoX_QR_${System.currentTimeMillis()}.png"
+                )
+                put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+                put(
+                    MediaStore.Images.Media.RELATIVE_PATH,
+                    Environment.DIRECTORY_PICTURES + "/KaamigoX"
+                )
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+
+            val uri = context.contentResolver.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                values
+            )
+
+            if (uri == null) {
+                message = "QR Code Save नहीं हो पाया।"
+                return
+            }
+
+            val output = context.contentResolver.openOutputStream(uri)
+
+            if (output == null) {
+                context.contentResolver.delete(uri, null, null)
+                message = "फाइल सेव नहीं हो पाई।"
+                return
+            }
+
+            output.use {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+            }
+
+            values.clear()
+            values.put(MediaStore.Images.Media.IS_PENDING, 0)
+            context.contentResolver.update(uri, values, null, null)
+
+            message = "QR Code Gallery में Save हो गया!"
+        } catch (e: Exception) {
+            message = "Save करने में समस्या हुई। दोबारा कोशिश करें।"
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -86,10 +145,7 @@ fun QRCodeGeneratorTool() {
             color = MaterialTheme.colorScheme.primary
         )
 
-        Text(
-            "Text या Website का QR Code बनाएँ",
-            fontSize = 15.sp
-        )
+        Text("Text या Website का QR Code बनाएँ")
 
         OutlinedTextField(
             value = inputText,
@@ -117,9 +173,7 @@ fun QRCodeGeneratorTool() {
         }
 
         qrBitmap?.let { bitmap ->
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -135,10 +189,12 @@ fun QRCodeGeneratorTool() {
                         modifier = Modifier.size(260.dp)
                     )
 
-                    Text(
-                        "QR Code सफलतापूर्वक बन गया।",
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Button(
+                        onClick = { saveQR(bitmap) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Save QR Code to Gallery")
+                    }
                 }
             }
         }
@@ -162,7 +218,7 @@ fun QRCodeGeneratorTool() {
         }
 
         Text(
-            "यह QR Code आपके फोन पर Offline बनाया जाता है।",
+            "QR Code आपके फोन पर Offline बनाया जाता है।",
             fontSize = 13.sp,
             color = MaterialTheme.colorScheme.secondary
         )
