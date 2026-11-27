@@ -48,7 +48,8 @@ fun KaamigoApp() {
         "Image Resizer",
         "PDF Merger",
         "PDF Splitter",
-        "PDF Lock / Unlock"
+        "PDF Lock / Unlock",
+        "Image to Text (OCR)"
     )
 
     Scaffold(
@@ -94,6 +95,7 @@ fun KaamigoApp() {
                 "PDF Merger" -> PdfMergerTool()
                 "PDF Splitter" -> PdfSplitterTool()
                 "PDF Lock / Unlock" -> PdfLockUnlockTool()
+                "Image to Text (OCR)" -> ImageToTextTool()
 
                 else -> {
                     LazyColumn(
