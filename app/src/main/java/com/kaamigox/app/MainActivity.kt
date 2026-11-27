@@ -74,13 +74,11 @@ fun KaamigoApp() {
                 .padding(padding)
         ) {
             when (selectedTool) {
-                "Calculator" -> {
-                    CalculatorTool()
-                }
+                "Calculator" -> CalculatorTool()
 
-                "Word Counter" -> {
-                    WordCounterTool()
-                }
+                "Word Counter" -> WordCounterTool()
+
+                "Password Generator" -> PasswordGeneratorTool()
 
                 else -> {
                     LazyColumn(
