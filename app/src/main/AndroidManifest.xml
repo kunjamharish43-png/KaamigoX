@@ -5,8 +5,8 @@
     <application
         android:allowBackup="true"
         android:label="Kaamigo X"
-        android:icon="@android:drawable/sym_def_app_icon"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.KaamigoX"
         android:supportsRtl="true">
 
         <activity
@@ -19,7 +19,5 @@
             </intent-filter>
 
         </activity>
-
     </application>
-
 </manifest>
