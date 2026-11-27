@@ -80,6 +80,8 @@ fun KaamigoApp() {
 
                 "Password Generator" -> PasswordGeneratorTool()
 
+                "Text Case Converter" -> TextCaseConverterTool()
+
                 else -> {
                     LazyColumn(
                         modifier = Modifier
