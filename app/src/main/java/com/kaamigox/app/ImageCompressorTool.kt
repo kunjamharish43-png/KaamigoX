@@ -6,12 +6,16 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import java.io.ByteArrayOutputStream
@@ -23,6 +27,7 @@ fun ImageCompressorTool() {
     val context = LocalContext.current
 
     var selectedImage by remember { mutableStateOf<Uri?>(null) }
+    var previewBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var targetSize by remember { mutableStateOf("200") }
     var sizeUnit by remember { mutableStateOf("KB") }
     var resultBytes by remember { mutableStateOf<ByteArray?>(null) }
@@ -36,7 +41,31 @@ fun ImageCompressorTool() {
     ) { uri ->
         selectedImage = uri
         resultBytes = null
-        message = if (uri != null) "फोटो चुन ली गई है।" else ""
+        originalSize = 0L
+        resultSize = 0L
+        previewBitmap = null
+
+        if (uri != null) {
+            try {
+                previewBitmap = context.contentResolver
+                    .openInputStream(uri)?.use {
+                        BitmapFactory.decodeStream(it)
+                    }
+                originalSize = context.contentResolver
+                    .openInputStream(uri)?.use {
+                        it.available().toLong()
+                    } ?: 0L
+                message = if (previewBitmap != null) {
+                    "फोटो चुन ली गई है।"
+                } else {
+                    "फोटो खुल नहीं सकी।"
+                }
+            } catch (e: Exception) {
+                message = "फोटो खुल नहीं सकी: ${e.message}"
+            }
+        } else {
+            message = ""
+        }
     }
 
     val saveLauncher = rememberLauncherForActivityResult(
@@ -135,13 +164,17 @@ fun ImageCompressorTool() {
                 val newHeight =
                     (workingBitmap.height * 0.80).roundToInt()
 
-                workingBitmap = Bitmap.createScaledBitmap(
+                val smallerBitmap = Bitmap.createScaledBitmap(
                     workingBitmap,
                     newWidth.coerceAtLeast(1),
                     newHeight.coerceAtLeast(1),
                     true
                 )
 
+                if (workingBitmap !== originalBitmap) {
+                    workingBitmap.recycle()
+                }
+                workingBitmap = smallerBitmap
                 attempts++
             }
 
@@ -198,8 +231,32 @@ fun ImageCompressorTool() {
         }
 
         if (selectedImage != null) {
-            Text("फोटो चुन ली गई है।")
+            previewBitmap?.let { bitmap ->
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = "Selected photo preview",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 280.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                )
+            }
+
             Text("Original Size: ${formatSize(originalSize)}")
+
+            OutlinedButton(
+                onClick = {
+                    selectedImage = null
+                    previewBitmap = null
+                    resultBytes = null
+                    originalSize = 0L
+                    resultSize = 0L
+                    message = "फोटो हटा दी गई है।"
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("❌ चुनी हुई फोटो हटाएँ")
+            }
         }
 
         Text("Target Size चुनें")
