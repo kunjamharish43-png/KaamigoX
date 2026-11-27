@@ -45,7 +45,8 @@ fun KaamigoApp() {
         "Image to PDF Converter",
         "PDF to Image Converter",
         "Image Compressor",
-        "Image Resizer"
+        "Image Resizer",
+        "PDF Merger"
     )
 
     Scaffold(
@@ -88,6 +89,7 @@ fun KaamigoApp() {
                 "PDF to Image Converter" -> PdfToImageTool()
                 "Image Compressor" -> ImageCompressorTool()
                 "Image Resizer" -> ImageResizerTool()
+                "PDF Merger" -> PdfMergerTool()
 
                 else -> {
                     LazyColumn(
