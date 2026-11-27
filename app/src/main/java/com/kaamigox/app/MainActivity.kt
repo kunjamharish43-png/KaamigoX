@@ -40,7 +40,8 @@ fun KaamigoApp() {
         "Word Counter",
         "Password Generator",
         "Text Case Converter",
-        "Text Encoder / Decoder"
+        "Text Encoder / Decoder",
+        "QR Code Generator"
     )
 
     Scaffold(
@@ -67,7 +68,6 @@ fun KaamigoApp() {
             )
         }
     ) { padding ->
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -75,14 +75,11 @@ fun KaamigoApp() {
         ) {
             when (selectedTool) {
                 "Calculator" -> CalculatorTool()
-
                 "Word Counter" -> WordCounterTool()
-
                 "Password Generator" -> PasswordGeneratorTool()
-
                 "Text Case Converter" -> TextCaseConverterTool()
-
                 "Text Encoder / Decoder" -> TextEncoderDecoderTool()
+                "QR Code Generator" -> QRCodeGeneratorTool()
 
                 else -> {
                     LazyColumn(
