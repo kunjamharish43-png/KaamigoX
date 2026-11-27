@@ -76,10 +76,15 @@ fun ImageToPdfTool() {
     ) { uri ->
         if (uri != null && pdfBytes != null) {
             try {
-                context.contentResolver.openOutputStream(uri)?.use {
-                    it.write(pdfBytes!!)
+                val output = context.contentResolver.openOutputStream(uri)
+                if (output != null) {
+                    output.use {
+                        it.write(pdfBytes!!)
+                    }
+                    message = "PDF सफलतापूर्वक सेव हो गई!"
+                } else {
+                    message = "PDF सेव नहीं हो पाई।"
                 }
-                message = "PDF सफलतापूर्वक सेव हो गई!"
             } catch (e: Exception) {
                 message = "PDF सेव नहीं हो पाई। दोबारा कोशिश करें।"
             }
@@ -116,6 +121,7 @@ fun ImageToPdfTool() {
                     val page = document.startPage(pageInfo)
 
                     val margin = 24f
+
                     val scale = minOf(
                         (595f - margin * 2) / bitmap.width,
                         (842f - margin * 2) / bitmap.height
@@ -156,6 +162,7 @@ fun ImageToPdfTool() {
                 document.close()
                 message = "$pageNumber पेज की PDF तैयार है!"
             }
+
         } catch (e: Exception) {
             pdfBytes = null
             message = "PDF बनाने में समस्या हुई। दोबारा कोशिश करें।"
@@ -181,7 +188,9 @@ fun ImageToPdfTool() {
         Text("अपनी फोटो को PDF में बदलें।")
 
         Button(
-            onClick = { imagePicker.launch("image/*") },
+            onClick = {
+                imagePicker.launch("image/*")
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Select Images")
@@ -208,13 +217,13 @@ fun ImageToPdfTool() {
                                 "${index + 1}.",
                                 fontSize = 15.sp
                             )
+
                             Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Default.Image,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+
+                            Text("📷", fontSize = 20.sp)
+
                             Spacer(modifier = Modifier.width(8.dp))
+
                             Text(
                                 text = name,
                                 modifier = Modifier.weight(1f),
@@ -233,7 +242,10 @@ fun ImageToPdfTool() {
                 .fillMaxWidth()
                 .height(54.dp)
         ) {
-            Text(if (isGenerating) "Creating PDF..." else "Create PDF")
+            Text(
+                if (isGenerating) "Creating PDF..."
+                else "Create PDF"
+            )
         }
 
         if (pdfBytes != null) {
