@@ -3,6 +3,8 @@ package com.kaamigox.app
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -13,21 +15,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
 import android.graphics.ImageDecoder
-import android.os.Build
-import android.provider.MediaStore
 
 @Composable
 fun ImageToTextTool() {
     val context = LocalContext.current
 
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var extractedText by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("") }
@@ -36,9 +35,9 @@ fun ImageToTextTool() {
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        imageUri = uri
         extractedText = ""
         status = ""
+        bitmap = null
 
         if (uri != null) {
             try {
@@ -54,23 +53,38 @@ fun ImageToTextTool() {
                     )
                 }
             } catch (e: Exception) {
-                bitmap = null
                 status = "फोटो खोलने में समस्या: ${e.message}"
             }
-        } else {
-            bitmap = null
+        }
+    }
+
+    val saveLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/plain")
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                context.contentResolver.openOutputStream(uri)?.use {
+                    it.write(extractedText.toByteArray(Charsets.UTF_8))
+                }
+                status = "TXT फाइल सफलतापूर्वक सेव हो गई।"
+            } catch (e: Exception) {
+                status = "फाइल सेव नहीं हुई: ${e.message}"
+            }
         }
     }
 
     fun recognizeText() {
         val selectedBitmap = bitmap ?: return
+
         isProcessing = true
         status = "टेक्स्ट पहचाना जा रहा है..."
 
         val image = InputImage.fromBitmap(selectedBitmap, 0)
+
         val latinRecognizer = TextRecognition.getClient(
             TextRecognizerOptions.DEFAULT_OPTIONS
         )
+
         val devanagariRecognizer = TextRecognition.getClient(
             DevanagariTextRecognizerOptions.Builder().build()
         )
@@ -79,6 +93,7 @@ fun ImageToTextTool() {
             .addOnSuccessListener { latinResult ->
                 devanagariRecognizer.process(image)
                     .addOnSuccessListener { hindiResult ->
+
                         val englishText = latinResult.text
                         val hindiText = hindiResult.text
 
@@ -176,7 +191,9 @@ fun ImageToTextTool() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 150.dp),
-                label = { Text("आप टेक्स्ट एडिट भी कर सकते हैं") }
+                label = {
+                    Text("आप टेक्स्ट एडिट भी कर सकते हैं")
+                }
             )
 
             Button(
@@ -191,11 +208,21 @@ fun ImageToTextTool() {
                             extractedText
                         )
                     )
+
                     status = "टेक्स्ट कॉपी हो गया।"
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("टेक्स्ट कॉपी करें")
+            }
+
+            Button(
+                onClick = {
+                    saveLauncher.launch("OCR_Text.txt")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("TXT फाइल में सेव करें")
             }
         }
     }
