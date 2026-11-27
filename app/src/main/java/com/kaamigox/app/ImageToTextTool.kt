@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.graphics.ImageDecoder
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -21,7 +22,6 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
-import android.graphics.ImageDecoder
 
 @Composable
 fun ImageToTextTool() {
@@ -63,9 +63,13 @@ fun ImageToTextTool() {
     ) { uri: Uri? ->
         if (uri != null) {
             try {
-                context.contentResolver.openOutputStream(uri)?.use {
+                val output = context.contentResolver.openOutputStream(uri)
+                    ?: throw Exception("फाइल नहीं खुल सकी")
+
+                output.use {
                     it.write(extractedText.toByteArray(Charsets.UTF_8))
                 }
+
                 status = "TXT फाइल सफलतापूर्वक सेव हो गई।"
             } catch (e: Exception) {
                 status = "फाइल सेव नहीं हुई: ${e.message}"
@@ -148,7 +152,10 @@ fun ImageToTextTool() {
             onClick = { picker.launch("image/*") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("📷 फोटो चुनें")
+            Text(
+                if (bitmap == null) "📷 फोटो चुनें"
+                else "📷 दूसरी फोटो चुनें"
+            )
         }
 
         bitmap?.let {
@@ -159,6 +166,17 @@ fun ImageToTextTool() {
                     .fillMaxWidth()
                     .heightIn(max = 260.dp)
             )
+
+            OutlinedButton(
+                onClick = {
+                    bitmap = null
+                    extractedText = ""
+                    status = "फोटो हटा दी गई।"
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("फोटो हटाएँ")
+            }
         }
 
         if (bitmap != null) {
