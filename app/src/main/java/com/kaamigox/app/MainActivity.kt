@@ -11,15 +11,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             MaterialTheme(
                 colorScheme = lightColorScheme(
-                    primary = androidx.compose.ui.graphics.Color(0xFFFF7A00)
+                    primary = Color(0xFFFF7A00)
                 )
             ) {
                 KaamigoApp()
@@ -41,45 +43,66 @@ fun KaamigoApp() {
         "Text Encoder / Decoder"
     )
 
-    if (selectedTool == "Calculator") {
-        Column {
-            TextButton(onClick = { selectedTool = "" }) {
-                Text("← Back")
-            }
-            CalculatorTool()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        if (selectedTool.isEmpty()) {
+                            "Kaamigo X"
+                        } else {
+                            selectedTool
+                        }
+                    )
+                },
+                navigationIcon = {
+                    if (selectedTool.isNotEmpty()) {
+                        TextButton(
+                            onClick = { selectedTool = "" }
+                        ) {
+                            Text("← Back")
+                        }
+                    }
+                }
+            )
         }
-    } else if (selectedTool == "Word Counter") {
-        Column {
-            TextButton(onClick = { selectedTool = "" }) {
-                Text("← Back")
-            }
-            WordCounterTool()
-        }
-    } else {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Kaamigo X") }
-                )
-            }
-        ) { padding ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp)
-            ) {
-                items(tools) { tool ->
-                    Card(
+    ) { padding ->
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            when (selectedTool) {
+                "Calculator" -> {
+                    CalculatorTool()
+                }
+
+                "Word Counter" -> {
+                    WordCounterTool()
+                }
+
+                else -> {
+                    LazyColumn(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .clickable { selectedTool = tool }
+                            .fillMaxSize()
+                            .padding(16.dp)
                     ) {
-                        Text(
-                            text = tool,
-                            modifier = Modifier.padding(20.dp)
-                        )
+                        items(tools) { tool ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp)
+                                    .clickable {
+                                        selectedTool = tool
+                                    }
+                            ) {
+                                Text(
+                                    text = tool,
+                                    modifier = Modifier.padding(20.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
