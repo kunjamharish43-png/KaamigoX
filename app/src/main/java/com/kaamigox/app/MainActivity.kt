@@ -82,6 +82,8 @@ fun KaamigoApp() {
 
                 "Text Case Converter" -> TextCaseConverterTool()
 
+                "Text Encoder / Decoder" -> TextEncoderDecoderTool()
+
                 else -> {
                     LazyColumn(
                         modifier = Modifier
