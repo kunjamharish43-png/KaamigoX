@@ -1,12 +1,12 @@
 
 package com.kaamigox.app
 
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -26,6 +26,7 @@ fun ImageToPdfTool() {
     val context = LocalContext.current
 
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var imageNames by remember { mutableStateOf<List<String>>(emptyList()) }
     var pdfBytes by remember { mutableStateOf<ByteArray?>(null) }
     var message by remember { mutableStateOf("") }
     var isGenerating by remember { mutableStateOf(false) }
@@ -34,6 +35,34 @@ fun ImageToPdfTool() {
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris ->
         selectedImages = uris
+
+        imageNames = uris.mapIndexed { index, uri ->
+            try {
+                context.contentResolver.query(
+                    uri,
+                    arrayOf(OpenableColumns.DISPLAY_NAME),
+                    null,
+                    null,
+                    null
+                )?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val nameIndex = cursor.getColumnIndex(
+                            OpenableColumns.DISPLAY_NAME
+                        )
+                        if (nameIndex >= 0) {
+                            cursor.getString(nameIndex)
+                        } else {
+                            "Image ${index + 1}"
+                        }
+                    } else {
+                        "Image ${index + 1}"
+                    }
+                } ?: "Image ${index + 1}"
+            } catch (e: Exception) {
+                "Image ${index + 1}"
+            }
+        }
+
         pdfBytes = null
         message = if (uris.isNotEmpty()) {
             "${uris.size} फोटो चुनी गईं।"
@@ -70,7 +99,6 @@ fun ImageToPdfTool() {
         try {
             val document = PdfDocument()
             val paint = Paint(Paint.FILTER_BITMAP_FLAG)
-
             var pageNumber = 0
 
             for (uri in selectedImages) {
@@ -87,20 +115,17 @@ fun ImageToPdfTool() {
 
                     val page = document.startPage(pageInfo)
 
-                    val pageWidth = 595f
-                    val pageHeight = 842f
                     val margin = 24f
-
                     val scale = minOf(
-                        (pageWidth - margin * 2) / bitmap.width,
-                        (pageHeight - margin * 2) / bitmap.height
+                        (595f - margin * 2) / bitmap.width,
+                        (842f - margin * 2) / bitmap.height
                     )
 
                     val width = bitmap.width * scale
                     val height = bitmap.height * scale
 
-                    val left = (pageWidth - width) / 2f
-                    val top = (pageHeight - height) / 2f
+                    val left = (595f - width) / 2f
+                    val top = (842f - height) / 2f
 
                     val destination = RectF(
                         left,
@@ -156,29 +181,48 @@ fun ImageToPdfTool() {
         Text("अपनी फोटो को PDF में बदलें।")
 
         Button(
-            onClick = {
-                imagePicker.launch("image/*")
-            },
+            onClick = { imagePicker.launch("image/*") },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Select Images")
         }
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    "Selected Images",
-                    fontSize = 18.sp
-                )
+        if (selectedImages.isNotEmpty()) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        "Selected Images (${selectedImages.size})",
+                        fontSize = 19.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
 
-                Text(
-                    "${selectedImages.size} Photos",
-                    fontSize = 26.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                    imageNames.forEachIndexed { index, name ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "${index + 1}.",
+                                fontSize = 15.sp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Image,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = name,
+                                modifier = Modifier.weight(1f),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -189,10 +233,7 @@ fun ImageToPdfTool() {
                 .fillMaxWidth()
                 .height(54.dp)
         ) {
-            Text(
-                if (isGenerating) "Creating PDF..."
-                else "Create PDF"
-            )
+            Text(if (isGenerating) "Creating PDF..." else "Create PDF")
         }
 
         if (pdfBytes != null) {
@@ -216,6 +257,7 @@ fun ImageToPdfTool() {
         OutlinedButton(
             onClick = {
                 selectedImages = emptyList()
+                imageNames = emptyList()
                 pdfBytes = null
                 message = ""
             },
