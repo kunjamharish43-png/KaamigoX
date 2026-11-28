@@ -50,7 +50,8 @@ fun KaamigoApp() {
         "PDF Splitter",
         "PDF Lock / Unlock",
         "Image to Text (OCR)",
-        "Speech to Text"
+        "Speech to Text",
+        "Text to Speech"
     )
 
     Scaffold(
@@ -98,26 +99,38 @@ fun KaamigoApp() {
                 "PDF Lock / Unlock" -> PdfLockUnlockTool()
                 "Image to Text (OCR)" -> ImageToTextTool()
                 "Speech to Text" -> SpeechToTextTool()
+                "Text to Speech" -> TextToSpeechTool()
 
                 else -> {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp)
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         items(tools) { tool ->
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 6.dp)
                                     .clickable {
                                         selectedTool = tool
-                                    }
-                            ) {
-                                Text(
-                                    text = tool,
-                                    modifier = Modifier.padding(20.dp)
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFFFFF3E8)
                                 )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(18.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = tool,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text("›")
+                                }
                             }
                         }
                     }
