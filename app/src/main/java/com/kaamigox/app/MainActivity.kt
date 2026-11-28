@@ -52,7 +52,8 @@ fun KaamigoApp() {
         "Image to Text (OCR)",
         "Speech to Text",
         "Text to Speech",
-        "Image Translator"
+        "Image Translator",
+        "Text to PDF"
     )
 
     Scaffold(
@@ -102,6 +103,7 @@ fun KaamigoApp() {
                 "Speech to Text" -> SpeechToTextTool()
                 "Text to Speech" -> TextToSpeechTool()
                 "Image Translator" -> ImageTranslatorTool()
+                "Text to PDF" -> TextToPdfTool()
 
                 else -> {
                     LazyColumn(
