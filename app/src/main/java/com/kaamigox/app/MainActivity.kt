@@ -51,7 +51,8 @@ fun KaamigoApp() {
         "PDF Lock / Unlock",
         "Image to Text (OCR)",
         "Speech to Text",
-        "Text to Speech"
+        "Text to Speech",
+        "Image Translator"
     )
 
     Scaffold(
@@ -100,6 +101,7 @@ fun KaamigoApp() {
                 "Image to Text (OCR)" -> ImageToTextTool()
                 "Speech to Text" -> SpeechToTextTool()
                 "Text to Speech" -> TextToSpeechTool()
+                "Image Translator" -> ImageTranslatorTool()
 
                 else -> {
                     LazyColumn(
