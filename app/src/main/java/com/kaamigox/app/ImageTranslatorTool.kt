@@ -15,14 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
-import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import com.google.mlkit.vision.text.devanagari.DevaTextRecognizerOptions
+import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
 
 @Composable
 fun ImageTranslatorTool() {
@@ -32,7 +32,9 @@ fun ImageTranslatorTool() {
     var sourceLanguage by remember { mutableStateOf("en") }
     var extractedText by remember { mutableStateOf("") }
     var translatedText by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf("फोटो चुनें या कैमरे से फोटो लें।") }
+    var status by remember {
+        mutableStateOf("फोटो चुनें या कैमरे से फोटो लें।")
+    }
     var loading by remember { mutableStateOf(false) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -85,7 +87,7 @@ fun ImageTranslatorTool() {
 
         val recognizer = if (sourceLanguage == "hi") {
             TextRecognition.getClient(
-                DevaTextRecognizerOptions.Builder().build()
+                DevanagariTextRecognizerOptions.Builder().build()
             )
         } else {
             TextRecognition.getClient(
@@ -190,9 +192,9 @@ fun ImageTranslatorTool() {
             }
         }
 
-        if (imageBitmap != null) {
+        imageBitmap?.let { bitmap ->
             Image(
-                bitmap = imageBitmap!!.asImageBitmap(),
+                bitmap = bitmap.asImageBitmap(),
                 contentDescription = "Selected image",
                 modifier = Modifier
                     .fillMaxWidth()
